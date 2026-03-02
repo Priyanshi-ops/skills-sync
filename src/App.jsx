@@ -1,8 +1,10 @@
 import { useState, createContext, useContext, useRef, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import Aboutus from './Aboutus'
 
 // ---- Theme Context ----
-const ThemeCtx = createContext({ dark: false })
-const useTheme = () => useContext(ThemeCtx)
+export const ThemeCtx = createContext({ dark: true })
+export const useTheme = () => useContext(ThemeCtx)
 
 // ---- Keyframe Styles injected once ----
 const STYLES = `
@@ -315,7 +317,6 @@ const ALL_JOBS = [
   },
 ]
 
-// ---------- MATCH LOGIC ----------
 function matchJobs(userSkills) {
   if (userSkills.length === 0) return []
   const lowerSkills = userSkills.map((s) => s.toLowerCase())
@@ -349,7 +350,7 @@ function JobDetailModal({ job, userSkills, onClose }) {
       className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className={`rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transition-colors ${dark ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}>
         {/* Header */}
         <div className="bg-indigo-700 text-white px-6 py-5 rounded-t-2xl flex items-start justify-between">
           <div>
@@ -370,7 +371,7 @@ function JobDetailModal({ job, userSkills, onClose }) {
 
           {/* ✅ Skills You Have */}
           <section>
-            <h3 className="font-bold text-gray-800 text-base mb-3 flex items-center gap-2">
+            <h3 className={`font-bold text-base mb-3 flex items-center gap-2 ${dark ? 'text-gray-100' : 'text-gray-800'}`}>
               <span className="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs">✓</span>
               Skills You Have
             </h3>
@@ -392,15 +393,15 @@ function JobDetailModal({ job, userSkills, onClose }) {
 
           {/*  Missing Skills */}
           <section>
-            <h3 className="font-bold text-gray-800 text-base mb-3 flex items-center gap-2">
+            <h3 className={`font-bold text-base mb-3 flex items-center gap-2 ${dark ? 'text-gray-100' : 'text-gray-800'}`}>
               <span className="w-6 h-6 rounded-full bg-red-100 text-red-500 flex items-center justify-center text-xs font-bold">!</span>
               Missing Skills to Learn
             </h3>
             <ul className="space-y-2">
               {job.missingSkills.map((s, i) => (
-                <li key={i} className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-xl px-4 py-2.5">
+                <li key={i} className={`flex items-start gap-3 border rounded-xl px-4 py-2.5 ${dark ? 'bg-red-900/20 border-red-900/30' : 'bg-red-50 border-red-100'}`}>
                   <span className="mt-0.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-xs flex-shrink-0">✕</span>
-                  <span className="text-sm text-gray-700">{s}</span>
+                  <span className={`text-sm ${dark ? 'text-gray-300' : 'text-gray-700'}`}>{s}</span>
                 </li>
               ))}
             </ul>
@@ -408,7 +409,7 @@ function JobDetailModal({ job, userSkills, onClose }) {
 
           {/* 🗺️ Improvement Roadmap */}
           <section>
-            <h3 className="font-bold text-gray-800 text-base mb-4 flex items-center gap-2">
+            <h3 className={`font-bold text-base mb-4 flex items-center gap-2 ${dark ? 'text-gray-100' : 'text-gray-800'}`}>
               <span className="text-indigo-600">🗺️</span> Improvement Roadmap
             </h3>
             <div className="relative">
@@ -421,9 +422,9 @@ function JobDetailModal({ job, userSkills, onClose }) {
                     <div className="absolute -left-8 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow">
                       {item.step}
                     </div>
-                    <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3">
+                    <div className={`border rounded-xl px-4 py-3 ${dark ? 'bg-indigo-900/30 border-indigo-800/50' : 'bg-indigo-50 border-indigo-100'}`}>
                       <p className="font-semibold text-indigo-800 text-sm">{item.title}</p>
-                      <p className="text-sm text-gray-600 mt-0.5">{item.desc}</p>
+                      <p className={`text-sm mt-0.5 ${dark ? 'text-indigo-300/80' : 'text-gray-600'}`}>{item.desc}</p>
                     </div>
                   </li>
                 ))}
@@ -451,8 +452,11 @@ function JobDetailModal({ job, userSkills, onClose }) {
 
 function Navbar({ onToggleTheme }) {
   const { dark } = useTheme()
-  const [active, setActive] = useState('Find Your Fit')
-  const navLinks = ['Find Your Fit', 'Why This Exists', 'Contact']
+  const [active, setActive] = useState('Home')
+  const navLinks = [
+    { name: 'Home', path: '/' },
+    { name: 'Why This Exists', path: '/about' }
+  ]
 
   const base = dark
     ? 'bg-gray-900 text-gray-100 border-b border-gray-700'
@@ -470,14 +474,14 @@ function Navbar({ onToggleTheme }) {
         <ul className="flex items-center gap-8 font-medium text-sm">
           {navLinks.map((link) => (
             <li
-              key={link}
-              onClick={() => setActive(link)}
-              className={`cursor-pointer transition-all pb-1 ${active === link
+              key={link.name}
+              onClick={() => setActive(link.name)}
+              className={`cursor-pointer transition-all pb-1 ${active === link.name
                 ? dark ? 'border-b-2 border-indigo-400 text-indigo-400 font-semibold' : 'border-b-2 border-white font-semibold'
                 : dark ? 'hover:text-indigo-400' : 'hover:text-indigo-200'
                 }`}
             >
-              {link}
+              <Link to={link.path}>{link.name}</Link>
             </li>
           ))}
         </ul>
@@ -692,10 +696,11 @@ function HeroSection({ skills, setSkills, onSearch }) {
 }
 
 function ProgressBar({ label, percentage, color }) {
+  const { dark } = useTheme()
   return (
     <div className="mb-4">
-      <p className="text-sm text-gray-700 mb-1">{label}</p>
-      <div className="w-full bg-gray-200 rounded-full h-6 relative overflow-hidden">
+      <p className={`text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>{label}</p>
+      <div className={`w-full rounded-full h-6 relative overflow-hidden ${dark ? 'bg-gray-800' : 'bg-gray-200'}`}>
         <div
           className={`h-6 rounded-full flex items-center justify-end pr-2 transition-all duration-700 ${color}`}
           style={{ width: `${percentage}%` }}
@@ -715,6 +720,7 @@ const PATH_COLORS = [
 ]
 
 function SidePanel({ matchedJobs, totalSkills }) {
+  const { dark } = useTheme()
   const topScore = matchedJobs.length > 0 ? matchedJobs[0].hits : 0
   const topMatch = Math.min(100, Math.round((topScore / Math.max(totalSkills, 1)) * 100))
   const avgScore =
@@ -732,8 +738,8 @@ function SidePanel({ matchedJobs, totalSkills }) {
   return (
     <div className="flex flex-col gap-6">
       {/* Skill Match Summary */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-        <h2 className="font-bold text-gray-800 mb-4">Skill Match Summary</h2>
+      <div className={`rounded-xl border p-5 shadow-sm transition-colors ${dark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
+        <h2 className={`font-bold mb-4 ${dark ? 'text-gray-100' : 'text-gray-800'}`}>Skill Match Summary</h2>
         <ProgressBar label="Top Job Match" percentage={topMatch} color="bg-green-500" />
         <ProgressBar label="Average Match" percentage={avgScore} color="bg-indigo-500" />
         <p className="text-xs text-gray-400 mt-2">
@@ -742,16 +748,16 @@ function SidePanel({ matchedJobs, totalSkills }) {
       </div>
 
       {/* Dynamic Suggested Learning Paths */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-        <h2 className="font-bold text-gray-800 mb-1">Suggested Learning Paths</h2>
-        <p className="text-xs text-gray-400 mb-4 italic">Based on your top job matches</p>
+      <div className={`rounded-xl border p-5 shadow-sm transition-colors ${dark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
+        <h2 className={`font-bold mb-1 ${dark ? 'text-gray-100' : 'text-gray-800'}`}>Suggested Learning Paths</h2>
+        <p className={`text-xs mb-4 italic ${dark ? 'text-gray-400' : 'text-gray-400'}`}>Based on your top job matches</p>
 
         {learningPaths.length === 0 ? (
           <p className="text-sm text-gray-400 italic">Search for jobs to see personalised learning paths.</p>
         ) : (
           <ul className="space-y-3">
             {learningPaths.map(({ jobTitle, step, color }) => (
-              <li key={jobTitle} className={`rounded-xl border px-4 py-3 ${color.badge}`}>
+              <li key={jobTitle} className={`rounded-xl border px-4 py-3 transition-colors ${dark ? 'bg-indigo-900/20 border-indigo-900/30' : color.badge}`}>
                 {/* Job label row */}
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="text-sm">{color.icon}</span>
@@ -761,8 +767,8 @@ function SidePanel({ matchedJobs, totalSkills }) {
                 <div className="flex items-start gap-2">
                   <span className={`mt-1 w-2.5 h-2.5 rounded-full flex-shrink-0 ${color.dot}`}></span>
                   <div>
-                    <p className="text-sm font-semibold leading-tight">{step.title}</p>
-                    <p className="text-xs opacity-75 mt-0.5 leading-snug">{step.desc}</p>
+                    <p className={`text-sm font-semibold leading-tight ${dark ? 'text-indigo-300' : ''}`}>{step.title}</p>
+                    <p className={`text-xs mt-0.5 leading-snug ${dark ? 'text-indigo-400/80' : 'opacity-75'}`}>{step.desc}</p>
                   </div>
                 </div>
               </li>
@@ -775,17 +781,18 @@ function SidePanel({ matchedJobs, totalSkills }) {
 }
 
 function JobCard({ job, userSkills, onViewDetails }) {
+  const { dark } = useTheme()
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex flex-col gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all">
+    <div className={`rounded-xl border p-5 shadow-sm flex flex-col gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all ${dark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
       <div>
-        <h3 className="font-bold text-gray-900 text-base mb-1">{job.title}</h3>
+        <h3 className={`font-bold text-base mb-1 ${dark ? 'text-gray-100' : 'text-gray-900'}`}>{job.title}</h3>
         <span className={`text-white text-xs font-semibold px-2.5 py-0.5 rounded ${job.badgeColor}`}>
           {job.badge}
         </span>
       </div>
       <ul className="space-y-1.5 flex-1">
         {job.skills.map((s) => (
-          <li key={s} className="flex items-center gap-2 text-sm text-gray-700">
+          <li key={s} className={`flex items-center gap-2 text-sm ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
             <span className={`w-2.5 h-2.5 rounded-full inline-block ${job.dotColor}`}></span>
             {s}
           </li>
@@ -805,11 +812,12 @@ function JobCard({ job, userSkills, onViewDetails }) {
 }
 
 function JobMatchesSection({ matchedJobs, userSkills, onViewDetails }) {
+  const { dark } = useTheme()
   if (matchedJobs.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-10 shadow-sm text-center">
+      <div className={`rounded-xl border p-10 shadow-sm text-center transition-colors ${dark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
         <div className="text-4xl mb-3">🔍</div>
-        <h2 className="font-bold text-gray-700 text-lg mb-2">No Matches Found</h2>
+        <h2 className={`font-bold text-lg mb-2 ${dark ? 'text-gray-100' : 'text-gray-700'}`}>No Matches Found</h2>
         <p className="text-sm text-gray-400">
           Try adding more skills like <em>Python, React, AWS, Java, Docker, SQL</em>…
         </p>
@@ -818,8 +826,8 @@ function JobMatchesSection({ matchedJobs, userSkills, onViewDetails }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-      <h2 className="font-bold text-gray-900 text-lg mb-4">
+    <div className={`rounded-xl border p-6 shadow-sm transition-colors ${dark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
+      <h2 className={`font-bold text-lg mb-4 ${dark ? 'text-white' : 'text-gray-900'}`}>
         Top Job Matches for You:
         <span className="ml-2 text-sm font-normal text-indigo-500">{matchedJobs.length} result{matchedJobs.length !== 1 ? 's' : ''}</span>
       </h2>
@@ -839,12 +847,13 @@ const SKILL_GAPS = [
 ]
 
 function SkillGapCard({ gap }) {
+  const { dark } = useTheme()
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex items-center gap-4 hover:shadow-md transition-all">
-      <div className={`w-14 h-14 rounded-full ${gap.iconBg} flex items-center justify-center text-2xl flex-shrink-0`}>
+    <div className={`rounded-xl border p-5 shadow-sm flex items-center gap-4 hover:shadow-md transition-all ${dark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
+      <div className={`w-14 h-14 rounded-full ${gap.iconBg} flex items-center justify-center text-2xl flex-shrink-0 ${dark ? 'opacity-80' : ''}`}>
         {gap.icon}
       </div>
-      <div className="flex items-center gap-2 text-sm font-medium text-gray-800">
+      <div className={`flex items-center gap-2 text-sm font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}>
         <span className={`w-3 h-3 rounded-full ${gap.dot} inline-block`}></span>
         {gap.label}
       </div>
@@ -853,9 +862,10 @@ function SkillGapCard({ gap }) {
 }
 
 function SkillGapSection() {
+  const { dark } = useTheme()
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-      <h2 className="font-bold text-gray-900 text-lg mb-1">Skill Gap Analysis:</h2>
+    <div className={`rounded-xl border p-6 shadow-sm transition-colors ${dark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
+      <h2 className={`font-bold text-lg mb-1 ${dark ? 'text-white' : 'text-gray-900'}`}>Skill Gap Analysis:</h2>
       <p className="text-sm text-gray-500 italic mb-5">Improve Your Skills To Reach Your Desired Role</p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {SKILL_GAPS.map((g) => (
@@ -871,7 +881,7 @@ export default function App() {
   const [skills, setSkills] = useState([])
   const [matchedJobs, setMatchedJobs] = useState(null)
   const [selectedJob, setSelectedJob] = useState(null)
-  const [dark, setDark] = useState(false)
+  const [dark, setDark] = useState(true)
   const resultsRef = useRef(null)
 
   const handleSetSkills = (newSkills) => {
@@ -889,37 +899,47 @@ export default function App() {
 
   return (
     <ThemeCtx.Provider value={{ dark }}>
-      <div className={`min-h-screen font-sans transition-colors duration-300 ${dark ? 'bg-gray-950 text-gray-100' : 'bg-slate-100 text-gray-900'
-        }`}>
-        <Navbar onToggleTheme={() => setDark((d) => !d)} />
-        <HeroSection skills={skills} setSkills={handleSetSkills} onSearch={handleSearch} />
+      <BrowserRouter>
+        <div className={`min-h-screen font-sans transition-colors duration-300 ${dark ? 'dark bg-gray-950 text-gray-100' : 'bg-slate-100 text-gray-900'
+          }`}>
+          <Navbar onToggleTheme={() => setDark((d) => !d)} />
 
-        {matchedJobs !== null && (
-          <main ref={resultsRef} className="max-w-6xl mx-auto px-4 py-8">
-            <div className="flex flex-col lg:flex-row gap-6">
-              <aside className="w-full lg:w-72 flex-shrink-0">
-                <SidePanel matchedJobs={matchedJobs} totalSkills={skills.length} />
-              </aside>
-              <div className="flex-1 flex flex-col gap-6">
-                <JobMatchesSection
-                  matchedJobs={matchedJobs}
-                  userSkills={skills}
-                  onViewDetails={(job) => setSelectedJob(job)}
-                />
-                <SkillGapSection />
-              </div>
-            </div>
-          </main>
-        )}
+          <Routes>
+            <Route path="/" element={
+              <>
+                <HeroSection skills={skills} setSkills={handleSetSkills} onSearch={handleSearch} />
 
-        {selectedJob && (
-          <JobDetailModal
-            job={selectedJob}
-            userSkills={skills}
-            onClose={() => setSelectedJob(null)}
-          />
-        )}
-      </div>
+                {matchedJobs !== null && (
+                  <main ref={resultsRef} className="max-w-6xl mx-auto px-4 py-8">
+                    <div className="flex flex-col lg:flex-row gap-6">
+                      <aside className="w-full lg:w-72 flex-shrink-0">
+                        <SidePanel matchedJobs={matchedJobs} totalSkills={skills.length} />
+                      </aside>
+                      <div className="flex-1 flex flex-col gap-6">
+                        <JobMatchesSection
+                          matchedJobs={matchedJobs}
+                          userSkills={skills}
+                          onViewDetails={(job) => setSelectedJob(job)}
+                        />
+                        <SkillGapSection />
+                      </div>
+                    </div>
+                  </main>
+                )}
+              </>
+            } />
+            <Route path="/about" element={<Aboutus />} />
+          </Routes>
+
+          {selectedJob && (
+            <JobDetailModal
+              job={selectedJob}
+              userSkills={skills}
+              onClose={() => setSelectedJob(null)}
+            />
+          )}
+        </div>
+      </BrowserRouter>
     </ThemeCtx.Provider>
   )
 }
