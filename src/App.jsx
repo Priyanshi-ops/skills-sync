@@ -1,6 +1,45 @@
 import { useState, createContext, useContext, useRef, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import Aboutus from './Aboutus'
+// PDF.js CDN version - loaded at runtime to avoid Vite bundler issues
+const PDFJS_VERSION = '3.11.174';
+const PDFJS_CDN = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}`;
+
+// Dynamically load PDF.js from CDN (avoids all bundler/worker issues)
+let pdfjsLoadPromise = null;
+function loadPdfJs() {
+  if (pdfjsLoadPromise) return pdfjsLoadPromise;
+  pdfjsLoadPromise = new Promise((resolve, reject) => {
+    // Check if already loaded
+    if (window.pdfjsLib) {
+      resolve(window.pdfjsLib);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = `${PDFJS_CDN}/pdf.min.js`;
+    script.onload = () => {
+      const lib = window.pdfjsLib;
+      lib.GlobalWorkerOptions.workerSrc = `${PDFJS_CDN}/pdf.worker.min.js`;
+      resolve(lib);
+    };
+    script.onerror = () => reject(new Error('Failed to load PDF.js from CDN'));
+    document.head.appendChild(script);
+  });
+  return pdfjsLoadPromise;
+}
+
+// List of predefined skills to match
+const SKILLS_DATABASE = [
+  'JavaScript', 'React', 'Node.js', 'Python', 'Java', 'HTML', 'CSS', 'Tailwind',
+  'Git', 'TypeScript', 'Redux', 'Vue.js', 'Angular', 'Next.js', 'Express',
+  'MongoDB', 'SQL', 'PostgreSQL', 'MySQL', 'Docker', 'Kubernetes', 'AWS',
+  'Azure', 'GCP', 'Linux', 'Jenkins', 'Terraform', 'CI/CD', 'REST', 'GraphQL',
+  'Postman', 'Swagger', 'C++', 'C#', '.NET', 'PHP', 'Laravel', 'Ruby', 'Rails',
+  'Go', 'Rust', 'Spring Boot', 'Hibernate', 'JUnit', 'Mockito', 'Machine Learning',
+  'TensorFlow', 'PyTorch', 'Data Science', 'Pandas', 'NumPy', 'Power BI',
+  'Tableau', 'Excel', 'Data Analysis', 'Cybersecurity', 'Agile', 'Scrum',
+  'Android', 'Kotlin', 'iOS', 'Swift', 'Flutter', 'React Native', 'Figma'
+];
 
 // ---- Theme Context ----
 export const ThemeCtx = createContext({ dark: true })
@@ -75,8 +114,8 @@ const ALL_JOBS = [
     id: 3,
     title: 'API Specialist',
     badge: 'Moderate Match',
-    badgeColor: 'bg-indigo-500',
-    dotColor: 'bg-blue-500',
+    badgeColor: 'bg-orange-500',
+    dotColor: 'bg-amber-500',
     skills: ['RESTful APIs', 'Postman Testing', 'API Documentation'],
     keywords: ['rest', 'api', 'postman', 'swagger', 'graphql', 'http', 'json'],
     requiredSkills: ['REST', 'GraphQL', 'Postman', 'Swagger', 'OAuth', 'JSON', 'API Security'],
@@ -149,8 +188,8 @@ const ALL_JOBS = [
     id: 6,
     title: 'Data Analyst',
     badge: 'Moderate Match',
-    badgeColor: 'bg-indigo-500',
-    dotColor: 'bg-indigo-500',
+    badgeColor: 'bg-orange-500',
+    dotColor: 'bg-orange-500',
     skills: ['Python / R', 'SQL Queries', 'Data Visualization'],
     keywords: ['python', 'r', 'sql', 'pandas', 'numpy', 'excel', 'tableau', 'power bi', 'data', 'analytics'],
     requiredSkills: ['Python', 'SQL', 'Excel', 'Tableau', 'Statistics', 'Pandas', 'Power BI'],
@@ -223,8 +262,8 @@ const ALL_JOBS = [
     id: 9,
     title: 'Android Developer',
     badge: 'Moderate Match',
-    badgeColor: 'bg-indigo-500',
-    dotColor: 'bg-indigo-500',
+    badgeColor: 'bg-orange-500',
+    dotColor: 'bg-orange-500',
     skills: ['Kotlin / Java', 'Android SDK', 'Material Design'],
     keywords: ['android', 'kotlin', 'java', 'android sdk', 'firebase', 'jetpack', 'mobile'],
     requiredSkills: ['Kotlin', 'Android SDK', 'Jetpack Compose', 'Firebase', 'MVVM', 'REST APIs'],
@@ -295,8 +334,8 @@ const ALL_JOBS = [
     id: 12,
     title: 'Cybersecurity Analyst',
     badge: 'Moderate Match',
-    badgeColor: 'bg-indigo-500',
-    dotColor: 'bg-indigo-500',
+    badgeColor: 'bg-orange-500',
+    dotColor: 'bg-orange-500',
     skills: ['Network Security', 'Penetration Testing', 'SIEM Tools'],
     keywords: ['security', 'cybersecurity', 'networking', 'ethical hacking', 'linux', 'firewall', 'siem', 'pentest'],
     requiredSkills: ['Networking', 'Linux', 'Ethical Hacking', 'SIEM', 'Firewalls', 'Incident Response'],
@@ -311,7 +350,7 @@ const ALL_JOBS = [
       { step: 1, title: 'Networking Fundamentals', desc: 'TCP/IP, DNS, HTTP, firewalls, VPNs, Wireshark' },
       { step: 2, title: 'Linux & Scripting', desc: 'Kali Linux, bash scripting, file permissions, log analysis' },
       { step: 3, title: 'Ethical Hacking', desc: 'Reconnaissance, exploitation, Metasploit, OWASP Top 10' },
-      { step: 4, title: 'Blue Team & SIEM', desc: 'Log monitoring, threat detection, Splunk, incident response' },
+      { step: 4, title: 'amber Team & SIEM', desc: 'Log monitoring, threat detection, Splunk, incident response' },
       { step: 5, title: 'Certifications', desc: 'CompTIA Security+, CEH, OSCP for advanced pentesting' },
     ],
   },
@@ -352,7 +391,7 @@ function JobDetailModal({ job, userSkills, onClose }) {
     >
       <div className={`rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transition-colors ${dark ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}>
         {/* Header */}
-        <div className="bg-indigo-700 text-white px-6 py-5 rounded-t-2xl flex items-start justify-between">
+        <div className="bg-orange-700 text-white px-6 py-5 rounded-t-2xl flex items-start justify-between">
           <div>
             <h2 className="text-xl font-bold">{job.title}</h2>
             <span className={`inline-block mt-1 text-xs font-semibold px-2.5 py-0.5 rounded ${job.badgeColor}`}>
@@ -410,21 +449,21 @@ function JobDetailModal({ job, userSkills, onClose }) {
           {/* 🗺️ Improvement Roadmap */}
           <section>
             <h3 className={`font-bold text-base mb-4 flex items-center gap-2 ${dark ? 'text-gray-100' : 'text-gray-800'}`}>
-              <span className="text-indigo-600">🗺️</span> Improvement Roadmap
+              <span className="text-orange-600">🗺️</span> Improvement Roadmap
             </h3>
             <div className="relative">
               {/* vertical line */}
-              <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-indigo-100" />
+              <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-orange-100" />
               <ul className="space-y-4 pl-12">
                 {job.roadmap.map((item) => (
                   <li key={item.step} className="relative">
                     {/* circle step */}
-                    <div className="absolute -left-8 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow">
+                    <div className="absolute -left-8 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs font-bold shadow">
                       {item.step}
                     </div>
-                    <div className={`border rounded-xl px-4 py-3 ${dark ? 'bg-indigo-900/30 border-indigo-800/50' : 'bg-indigo-50 border-indigo-100'}`}>
-                      <p className="font-semibold text-indigo-800 text-sm">{item.title}</p>
-                      <p className={`text-sm mt-0.5 ${dark ? 'text-indigo-300/80' : 'text-gray-600'}`}>{item.desc}</p>
+                    <div className={`border rounded-xl px-4 py-3 ${dark ? 'bg-orange-900/30 border-orange-800/50' : 'bg-orange-50 border-orange-100'}`}>
+                      <p className="font-semibold text-orange-800 text-sm">{item.title}</p>
+                      <p className={`text-sm mt-0.5 ${dark ? 'text-orange-300/80' : 'text-gray-600'}`}>{item.desc}</p>
                     </div>
                   </li>
                 ))}
@@ -438,7 +477,7 @@ function JobDetailModal({ job, userSkills, onClose }) {
         <div className="px-6 pb-6">
           <button
             onClick={onClose}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 transition-colors text-white font-semibold py-2.5 rounded-xl"
+            className="w-full bg-orange-500 hover:bg-orange-600 transition-colors text-white font-semibold py-2.5 rounded-xl"
           >
             Close
           </button>
@@ -450,7 +489,7 @@ function JobDetailModal({ job, userSkills, onClose }) {
 
 // ---------- COMPONENTS ----------
 
-function Navbar({ onToggleTheme }) {
+function Navbar({ onToggleTheme, onOpenUpload }) {
   const { dark } = useTheme()
   const [active, setActive] = useState('Home')
   const navLinks = [
@@ -460,7 +499,7 @@ function Navbar({ onToggleTheme }) {
 
   const base = dark
     ? 'bg-gray-900 text-gray-100 border-b border-gray-700'
-    : 'bg-indigo-700 text-white'
+    : 'bg-orange-700 text-white'
 
   return (
     <>
@@ -468,7 +507,7 @@ function Navbar({ onToggleTheme }) {
       <nav className={`${base} px-8 py-4 flex items-center justify-between shadow-lg sticky top-0 z-40 transition-colors duration-300`}>
         <div className="flex items-center gap-2 text-xl font-bold tracking-wide">
           <span className="text-2xl">⊞</span>
-          <span className={dark ? 'text-indigo-400' : 'text-white'}>SkillSync</span>
+          <span className={dark ? 'text-orange-400' : 'text-white'}>SkillSync</span>
         </div>
 
         <ul className="flex items-center gap-8 font-medium text-sm">
@@ -477,8 +516,8 @@ function Navbar({ onToggleTheme }) {
               key={link.name}
               onClick={() => setActive(link.name)}
               className={`cursor-pointer transition-all pb-1 ${active === link.name
-                ? dark ? 'border-b-2 border-indigo-400 text-indigo-400 font-semibold' : 'border-b-2 border-white font-semibold'
-                : dark ? 'hover:text-indigo-400' : 'hover:text-indigo-200'
+                ? dark ? 'border-b-2 border-orange-400 text-orange-400 font-semibold' : 'border-b-2 border-white font-semibold'
+                : dark ? 'hover:text-orange-400' : 'hover:text-orange-200'
                 }`}
             >
               <Link to={link.path}>{link.name}</Link>
@@ -491,14 +530,14 @@ function Navbar({ onToggleTheme }) {
           <button
             onClick={onToggleTheme}
             title={dark ? 'Switch to Light' : 'Switch to Dark'}
-            className={`w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all ${dark ? 'bg-gray-700 hover:bg-gray-600 text-yellow-300' : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+            className={`w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all ${dark ? 'bg-gray-700 hover:bg-gray-600 text-yellow-300' : 'bg-orange-600 hover:bg-orange-500 text-white'
               }`}
           >
             {dark ? '☀️' : '🌙'}
           </button>
-          <button className={`border rounded-full px-5 py-1.5 text-sm font-medium transition-all ${dark ? 'border-indigo-400 text-indigo-400 hover:bg-indigo-400 hover:text-gray-900' : 'border-white hover:bg-white hover:text-indigo-700'
+          <button onClick={onOpenUpload} className={`border rounded-full px-5 py-1.5 text-sm font-medium transition-all ${dark ? 'border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-gray-900' : 'border-white hover:bg-white hover:text-orange-700'
             }`}>
-            Analyze Skills
+            Resume Upload
           </button>
         </div>
       </nav>
@@ -509,13 +548,13 @@ function Navbar({ onToggleTheme }) {
 function SkillTag({ skill, onRemove }) {
   const { dark } = useTheme()
   return (
-    <span className={`inline-flex items-center gap-1 text-sm font-medium px-3 py-1 rounded-full ${dark ? 'bg-indigo-900 text-indigo-300' : 'bg-indigo-100 text-indigo-700'
+    <span className={`inline-flex items-center gap-1 text-sm font-medium px-3 py-1 rounded-full ${dark ? 'bg-orange-900 text-orange-300' : 'bg-orange-100 text-orange-700'
       }`}>
       {skill}
       {onRemove && (
         <button
           onClick={() => onRemove(skill)}
-          className={`ml-1 font-bold leading-none ${dark ? 'text-indigo-500 hover:text-indigo-200' : 'text-indigo-400 hover:text-indigo-700'
+          className={`ml-1 font-bold leading-none ${dark ? 'text-orange-500 hover:text-orange-200' : 'text-orange-400 hover:text-orange-700'
             }`}
         >
           ×
@@ -564,7 +603,7 @@ function HeroSection({ skills, setSkills, onSearch }) {
   )
 
   // Gradient backgrounds
-  const lightGrad = 'linear-gradient(135deg,#6366f1,#818cf8,#a78bfa,#6366f1)'
+  const lightGrad = 'linear-gradient(135deg,#f97316,#fb923c,#fdba74,#f97316)'
   const darkGrad = 'linear-gradient(135deg,#0f0c29,#302b63,#1a1a2e,#0f0c29)'
 
   return (
@@ -588,7 +627,7 @@ function HeroSection({ skills, setSkills, onSearch }) {
       {/* Glowing circle accents */}
       <div className={`absolute -top-20 -left-20 w-72 h-72 rounded-full blur-3xl opacity-30 pointer-events-none ${dark ? 'bg-purple-700' : 'bg-white'
         }`} />
-      <div className={`absolute -bottom-20 -right-20 w-72 h-72 rounded-full blur-3xl opacity-20 pointer-events-none ${dark ? 'bg-indigo-500' : 'bg-white'
+      <div className={`absolute -bottom-20 -right-20 w-72 h-72 rounded-full blur-3xl opacity-20 pointer-events-none ${dark ? 'bg-orange-500' : 'bg-white'
         }`} />
 
       {/* Headline */}
@@ -620,7 +659,7 @@ function HeroSection({ skills, setSkills, onSearch }) {
             boxShadow: focused ? '0 0 0 3px rgba(255,255,255,0.25)' : '0 8px 32px rgba(0,0,0,0.18)',
           }}
         >
-          <span className={`text-sm font-semibold whitespace-nowrap ${dark ? 'text-indigo-300' : 'text-indigo-700'}`}>
+          <span className={`text-sm font-semibold whitespace-nowrap ${dark ? 'text-orange-300' : 'text-orange-700'}`}>
             Your Skills:
           </span>
           {skills.map((s) => (
@@ -638,7 +677,7 @@ function HeroSection({ skills, setSkills, onSearch }) {
           />
           <button
             onClick={addSkillFromButton}
-            className="bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-all shadow"
+            className="bg-orange-500 hover:bg-orange-400 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-all shadow"
           >
             + Add
           </button>
@@ -716,7 +755,7 @@ function ProgressBar({ label, percentage, color }) {
 const PATH_COLORS = [
   { dot: 'bg-green-500', badge: 'bg-green-100 text-green-700 border-green-200', icon: '🥇' },
   { dot: 'bg-yellow-500', badge: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: '🥈' },
-  { dot: 'bg-indigo-500', badge: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: '🥉' },
+  { dot: 'bg-orange-500', badge: 'bg-orange-100 text-orange-700 border-orange-200', icon: '🥉' },
 ]
 
 function SidePanel({ matchedJobs, totalSkills }) {
@@ -741,7 +780,7 @@ function SidePanel({ matchedJobs, totalSkills }) {
       <div className={`rounded-xl border p-5 shadow-sm transition-colors ${dark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
         <h2 className={`font-bold mb-4 ${dark ? 'text-gray-100' : 'text-gray-800'}`}>Skill Match Summary</h2>
         <ProgressBar label="Top Job Match" percentage={topMatch} color="bg-green-500" />
-        <ProgressBar label="Average Match" percentage={avgScore} color="bg-indigo-500" />
+        <ProgressBar label="Average Match" percentage={avgScore} color="bg-orange-500" />
         <p className="text-xs text-gray-400 mt-2">
           {matchedJobs.length} job{matchedJobs.length !== 1 ? 's' : ''} found for your skills
         </p>
@@ -757,7 +796,7 @@ function SidePanel({ matchedJobs, totalSkills }) {
         ) : (
           <ul className="space-y-3">
             {learningPaths.map(({ jobTitle, step, color }) => (
-              <li key={jobTitle} className={`rounded-xl border px-4 py-3 transition-colors ${dark ? 'bg-indigo-900/20 border-indigo-900/30' : color.badge}`}>
+              <li key={jobTitle} className={`rounded-xl border px-4 py-3 transition-colors ${dark ? 'bg-orange-900/20 border-orange-900/30' : color.badge}`}>
                 {/* Job label row */}
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="text-sm">{color.icon}</span>
@@ -767,8 +806,8 @@ function SidePanel({ matchedJobs, totalSkills }) {
                 <div className="flex items-start gap-2">
                   <span className={`mt-1 w-2.5 h-2.5 rounded-full flex-shrink-0 ${color.dot}`}></span>
                   <div>
-                    <p className={`text-sm font-semibold leading-tight ${dark ? 'text-indigo-300' : ''}`}>{step.title}</p>
-                    <p className={`text-xs mt-0.5 leading-snug ${dark ? 'text-indigo-400/80' : 'opacity-75'}`}>{step.desc}</p>
+                    <p className={`text-sm font-semibold leading-tight ${dark ? 'text-orange-300' : ''}`}>{step.title}</p>
+                    <p className={`text-xs mt-0.5 leading-snug ${dark ? 'text-orange-400/80' : 'opacity-75'}`}>{step.desc}</p>
                   </div>
                 </div>
               </li>
@@ -802,7 +841,7 @@ function JobCard({ job, userSkills, onViewDetails }) {
         <span className="text-xs text-gray-400">{job.hits} skill{job.hits !== 1 ? 's' : ''} matched</span>
         <button
           onClick={() => onViewDetails(job)}
-          className="bg-indigo-600 hover:bg-indigo-700 transition-colors text-white text-sm font-semibold py-1.5 px-4 rounded-lg"
+          className="bg-orange-500 hover:bg-orange-600 transition-colors text-white text-sm font-semibold py-1.5 px-4 rounded-lg"
         >
           View Details
         </button>
@@ -829,7 +868,7 @@ function JobMatchesSection({ matchedJobs, userSkills, onViewDetails }) {
     <div className={`rounded-xl border p-6 shadow-sm transition-colors ${dark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
       <h2 className={`font-bold text-lg mb-4 ${dark ? 'text-white' : 'text-gray-900'}`}>
         Top Job Matches for You:
-        <span className="ml-2 text-sm font-normal text-indigo-500">{matchedJobs.length} result{matchedJobs.length !== 1 ? 's' : ''}</span>
+        <span className="ml-2 text-sm font-normal text-orange-500">{matchedJobs.length} result{matchedJobs.length !== 1 ? 's' : ''}</span>
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {matchedJobs.map((job) => (
@@ -876,12 +915,134 @@ function SkillGapSection() {
   )
 }
 
+// ---------- RESUME UPLOAD MODAL ----------
+function ResumeUploadModal({ onClose, setSkills, currentSkills }) {
+  const { dark } = useTheme()
+  const [file, setFile] = useState(null)
+  const [isProcessing, setIsProcessing] = useState(false)
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0])
+    }
+  }
+
+  const handleUpload = async () => {
+    if (!file) {
+      alert('Please select a PDF file first.')
+      return
+    }
+
+    if (file.type !== 'application/pdf') {
+      alert('Only PDF files are supported.')
+      return
+    }
+
+    setIsProcessing(true)
+
+    try {
+      // 1. Load PDF.js from CDN
+      const pdfjsLib = await loadPdfJs();
+
+      // 2. Read file as ArrayBuffer
+      const arrayBuffer = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsArrayBuffer(file);
+      });
+
+      // 3. Parse the PDF
+      const typedarray = new Uint8Array(arrayBuffer);
+      const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+
+      let fullText = "";
+
+      // 4. Extract text from all pages
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map(item => item.str).join(" ");
+        fullText += pageText + " ";
+      }
+
+      // 5. Match skills from extracted text
+      const upperText = fullText.toUpperCase();
+      const foundSkills = SKILLS_DATABASE.filter(skill => {
+        const isMatch = upperText.includes(skill.toUpperCase());
+        const isNew = !currentSkills.map(s => s.toLowerCase()).includes(skill.toLowerCase());
+        return isMatch && isNew;
+      });
+
+      if (foundSkills.length > 0) {
+        setSkills([...currentSkills, ...foundSkills]);
+      } else {
+        alert('No new skills were found in this resume. Try a different PDF or add skills manually.');
+      }
+
+      onClose()
+    } catch (error) {
+      console.error("Error parsing PDF:", error);
+      alert("Error: " + error.message);
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 transition-opacity"
+      onClick={(e) => !isProcessing && e.target === e.currentTarget && onClose()}
+    >
+      <div className={`rounded-2xl shadow-2xl w-full max-w-md p-6 transition-all transform scale-100 ${dark ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold">Upload Resume</h2>
+          {!isProcessing && (
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-3xl leading-none">&times;</button>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-center w-full">
+            <label htmlFor="dropzone-file" className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl ${isProcessing ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} transition-colors ${dark ? 'border-gray-700 hover:bg-gray-800/80 hover:border-orange-500 bg-gray-800/40' : 'border-gray-300 hover:bg-gray-50 hover:border-orange-500 bg-gray-50'}`}>
+              <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center">
+                <svg className={`w-8 h-8 mb-3 mx-auto ${dark ? 'text-gray-400' : 'text-gray-500'}`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
+                </svg>
+                <p className={`mb-2 text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}><span className="font-semibold">{isProcessing ? 'Processing PDF...' : 'Click to upload or drag and drop'}</span></p>
+                <p className={`text-xs ${dark ? 'text-gray-500' : 'text-gray-500'}`}>PDF only (MAX. 5MB)</p>
+              </div>
+              <input id="dropzone-file" type="file" accept=".pdf" className="hidden" onChange={handleFileChange} disabled={isProcessing} />
+            </label>
+          </div>
+
+          {file && !isProcessing && (
+            <div className={`text-sm p-3 rounded-lg flex items-center justify-between ${dark ? 'bg-orange-900/30 text-orange-300 border border-orange-800/50' : 'bg-orange-50 text-orange-700 border border-orange-100'}`}>
+              <span className="truncate pr-4">{file.name}</span>
+              <button onClick={() => setFile(null)} className="text-red-500 hover:text-red-700 font-bold text-lg leading-none">&times;</button>
+            </div>
+          )}
+
+          <button
+            onClick={handleUpload}
+            className={`w-full py-2.5 rounded-xl font-semibold transition-colors mt-2 ${file && !isProcessing ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/30' : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'}`}
+            disabled={!file || isProcessing}
+          >
+            {isProcessing ? 'Extracting Skills...' : 'Extract Skills'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ---------- MAIN APP ----------
 export default function App() {
   const [skills, setSkills] = useState([])
   const [matchedJobs, setMatchedJobs] = useState(null)
   const [selectedJob, setSelectedJob] = useState(null)
   const [dark, setDark] = useState(true)
+  const [isUploadOpen, setIsUploadOpen] = useState(false)
   const resultsRef = useRef(null)
 
   const handleSetSkills = (newSkills) => {
@@ -902,7 +1063,7 @@ export default function App() {
       <BrowserRouter>
         <div className={`min-h-screen font-sans transition-colors duration-300 ${dark ? 'dark bg-gray-950 text-gray-100' : 'bg-slate-100 text-gray-900'
           }`}>
-          <Navbar onToggleTheme={() => setDark((d) => !d)} />
+          <Navbar onToggleTheme={() => setDark((d) => !d)} onOpenUpload={() => setIsUploadOpen(true)} />
 
           <Routes>
             <Route path="/" element={
@@ -936,6 +1097,14 @@ export default function App() {
               job={selectedJob}
               userSkills={skills}
               onClose={() => setSelectedJob(null)}
+            />
+          )}
+
+          {isUploadOpen && (
+            <ResumeUploadModal
+              onClose={() => setIsUploadOpen(false)}
+              setSkills={handleSetSkills}
+              currentSkills={skills}
             />
           )}
         </div>
