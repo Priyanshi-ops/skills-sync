@@ -16,6 +16,13 @@ Here are some screenshots of the **Skill Matching Website** in action:
 ### Homepage
 ![Homepage of Skill Matching Website](skillsyncss/homepage.png)
 
+### Enter Skills and Job Preferences
+![Enter Skills and Job Preferences](skillsyncss/skillmatch.png)
+
+### Skill Gap Results
+![Job Matching Results](skillsyncss/skillgap.png)
+
+
 ## Features
 - Enter your current skills and preferred job roles.
 - Get a list of recommended jobs that match your profile.
