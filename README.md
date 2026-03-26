@@ -1,16 +1,27 @@
-# React + Vite
+# Skill Matching Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Introduction
+Welcome to the **Skill Matching Website** – your personalized career roadmap generator! This platform helps users discover the best career paths based on their current skills and job preferences. By entering your skills and preferred job roles, the system provides:
 
-Currently, two official plugins are available:
+- **Customized Skill Matching:** Identify which of your skills align with your dream job.
+- **Job Preference Insights:** Find roles that suit your interests and expertise.
+- **Personalized Roadmap:** Receive a step-by-step guide for upskilling, certifications, and experience needed to achieve your career goals.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Whether you’re a student exploring career options, a professional switching roles, or someone planning to upskill, this platform makes career planning simple, precise, and actionable.
 
-## React Compiler
+## Features
+- Enter your current skills and preferred job roles.
+- Get a list of recommended jobs that match your profile.
+- View a personalized roadmap with skills to learn, courses, and certifications.
+- Track your progress and update your skills to refine recommendations.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
+- **Frontend:** HTML, CSS, JavaScript (or React.js if using frameworks)
+- **Backend:** Node.js / Python Flask / Django (based on your choice)
+- **Database:** MySQL / MongoDB
+- **Visualization:** Charts or roadmap visualization with D3.js or similar libraries
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## How to Use
+1. Clone the repository:  
+   ```bash
+   git clone <repository-url>
