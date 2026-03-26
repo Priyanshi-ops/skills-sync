@@ -9,6 +9,13 @@ Welcome to the **Skill Matching Website** – your personalized career roadmap g
 
 Whether you’re a student exploring career options, a professional switching roles, or someone planning to upskill, this platform makes career planning simple, precise, and actionable.
 
+## Screenshots
+
+Here are some screenshots of the **Skill Matching Website** in action:
+
+### Homepage
+![Homepage of Skill Matching Website](skillsyncss/home page.png)
+
 ## Features
 - Enter your current skills and preferred job roles.
 - Get a list of recommended jobs that match your profile.
