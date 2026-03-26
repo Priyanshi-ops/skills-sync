@@ -16,12 +16,18 @@ Whether you’re a student exploring career options, a professional switching ro
 - Track your progress and update your skills to refine recommendations.
 
 ## Tech Stack
-- **Frontend:** HTML, CSS, JavaScript (or React.js if using frameworks)
-- **Backend:** Node.js / Python Flask / Django (based on your choice)
-- **Database:** MySQL / MongoDB
+- **Frontend:** HTML, CSS, JavaScript ( React.js)
+- **Database:** MySQL 
 - **Visualization:** Charts or roadmap visualization with D3.js or similar libraries
 
 ## How to Use
 1. Clone the repository:  
    ```bash
+
    git clone <repository-url>
+   cd <skill-sync>
+   npm install
+   npm run dev
+   
+This keeps it **minimal, clear, and easy for anyone to follow**.  
+
