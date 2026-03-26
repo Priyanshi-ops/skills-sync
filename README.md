@@ -14,7 +14,7 @@ Whether you’re a student exploring career options, a professional switching ro
 Here are some screenshots of the **Skill Matching Website** in action:
 
 ### Homepage
-![Homepage of Skill Matching Website](skillsyncss/home page.png)
+![Homepage of Skill Matching Website](skillsyncss/homepage.png)
 
 ## Features
 - Enter your current skills and preferred job roles.
