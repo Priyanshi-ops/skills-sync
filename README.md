@@ -16,11 +16,20 @@ Here are some screenshots of the **Skill Matching Website** in action:
 ### Homepage
 ![Homepage of Skill Matching Website](skillsyncss/homepage.png)
 
-### Enter Skills and Job Preferences
+### Manual Upload Skills and Job Preferences
 ![Enter Skills and Job Preferences](skillsyncss/skillmatch.png)
 
 ### Skill Gap Results
 ![Job Matching Results](skillsyncss/skillgap.png)
+
+### Upload Resume and Check Job Prefernces
+![Job Matching Results](skillsyncss/Uploadresume.png)
+
+### Why this Exist
+![Job Matching Results](skillsyncss/whythis.png)
+
+### The problem we solved
+![Job Matching Results](skillsyncss/problemsolved.png)
 
 
 ## Features
